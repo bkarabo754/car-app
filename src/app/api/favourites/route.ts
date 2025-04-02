@@ -1,4 +1,4 @@
-import { routes } from '@/config/route';
+import { routes } from '@/config/routes';
 import { Favourites } from '@/config/types';
 import { redis } from '@/lib/redis-store';
 import { setSourceId } from '@/lib/source-id';

@@ -1,6 +1,6 @@
 'use client';
 
-import { routes } from '@/config/route';
+import { routes } from '@/config/routes';
 import {
   ClassifiedWithImages,
   Favourites,
