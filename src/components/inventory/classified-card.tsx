@@ -16,6 +16,7 @@ import {
   formatFuelType,
   formatNumber,
   formatOdometerUnit,
+  formatPrice,
   formatTransmission,
 } from '@/lib/utils';
 import { Button } from '../ui/button';
@@ -97,7 +98,10 @@ export const ClassifiedCard = (props: ClassifiedCardProps) => {
             />
             <div className="absolute top-2.5 right-3.5 bg-primary text-slate-50 font-bold px-2 py-1 rounded">
               <p className="text-xs lg:text-base xl:text-lg font-semibold">
-                {classified.price}
+                {formatPrice({
+                  price: classified.price,
+                  currency: classified.currency,
+                })}
               </p>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { ChangeEvent } from 'react';
 
 type Params = {
   [x: string]: string | string[];
@@ -28,4 +29,28 @@ export enum MultiStepFormEnum {
 
 export interface Favourites {
   ids: number[];
+}
+
+export interface TaxonomyFiltersProps extends AwaitedPageProps {
+  handleChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+}
+
+export type FilterOptions<LType, VType> = Array<{
+  label: LType;
+  value: VType;
+}>;
+
+export interface SidebarProps extends AwaitedPageProps {
+  minMaxValues: Prisma.GetClassifiedAggregateType<{
+    _min: {
+      year: true;
+      price: true;
+      odoReading: true;
+    };
+    _max: {
+      year: true;
+      odoReading: true;
+      price: true;
+    };
+  }>;
 }
