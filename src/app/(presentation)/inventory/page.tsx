@@ -1,6 +1,8 @@
+import { PageSchema } from '@/app/schemas/page.schema';
 import { ClassifiedCard } from '@/components/inventory/classified-card';
 import { ClassifiedsList } from '@/components/inventory/classifieds-list';
 import { DialogFilters } from '@/components/inventory/dialog-filters';
+import { InventorySkeleton } from '@/components/inventory/inventory-skeleton';
 import { Sidebar } from '@/components/inventory/sidebar';
 import { CustomPagination } from '@/components/shared/custom-pagination';
 import { Pagination } from '@/components/ui/pagination';
@@ -10,118 +12,10 @@ import { AwaitedPageProps, Favourites, PageProps } from '@/config/types';
 import { prisma } from '@/lib/prisma';
 import { redis } from '@/lib/redis-store';
 import { getSourceId } from '@/lib/source-id';
+import { buildClassifiedFilterQuery } from '@/lib/utils';
 import { ClassifiedStatus, Prisma } from '@prisma/client';
+import { Suspense } from 'react';
 import { z } from 'zod';
-
-const PageSchema = z
-  .string()
-  .transform((val) => Math.max(Number(val), 1))
-  .optional();
-
-const ClassifiedFilterSchema = z.object({
-  q: z.string().optional(),
-  make: z.string().optional(),
-  model: z.string().optional(),
-  modelVariant: z.string().optional(),
-  minYear: z.string().optional(),
-  maxYear: z.string().optional(),
-  minPrice: z.string().optional(),
-  maxPrice: z.string().optional(),
-  minReading: z.string().optional(),
-  maxReading: z.string().optional(),
-  currency: z.string().optional(),
-  odoUnit: z.string().optional(),
-  transmission: z.string().optional(),
-  fuelType: z.string().optional(),
-  bodyType: z.string().optional(),
-  colour: z.string().optional(),
-  doors: z.string().optional(),
-  seats: z.string().optional(),
-  ulezCompliance: z.string().optional(),
-});
-
-const buildClassifiedFilterQuery = (
-  searchParams: AwaitedPageProps['searchParams'] | undefined
-): Prisma.ClassifiedWhereInput => {
-  const { data } = ClassifiedFilterSchema.safeParse(searchParams);
-
-  if (!data) return { status: ClassifiedStatus.LIVE };
-
-  const keys = Object.keys(data);
-
-  const taxonomyFilters = ['make', 'model', 'modelVariant'];
-
-  const rangeFilters = {
-    minYear: 'year',
-    maxYear: 'year',
-    minPrice: 'price',
-    maxPrice: 'price',
-    minReading: 'odoReading',
-    maxReading: 'odoReading',
-  };
-
-  const numFilters = ['seats', 'doors'];
-  const enumFilters = [
-    'odoUnit',
-    'currency',
-    'transmission',
-    'bodyType',
-    'fuelType',
-    'colour',
-    'ulezCompliance',
-  ];
-
-  const mapParamsToFields = keys.reduce(
-    (acc, key) => {
-      const value = searchParams?.[key] as string | undefined;
-      if (!value) return acc;
-
-      if (taxonomyFilters.includes(key)) {
-        acc[key] = { id: Number(value) };
-      } else if (enumFilters.includes(key)) {
-        acc[key] = value.toUpperCase();
-      } else if (numFilters.includes(key)) {
-        acc[key] = Number(value);
-      } else if (key in rangeFilters) {
-        const field = rangeFilters[key as keyof typeof rangeFilters];
-        acc[field] = acc[field] || {};
-        if (key.startsWith('min')) {
-          acc[field].gte = Number(value);
-        } else if (key.startsWith('max')) {
-          acc[field].lte = Number(value);
-        }
-      }
-
-      return acc;
-    },
-    {} as { [key: string]: any }
-  );
-
-  return {
-    status: ClassifiedStatus.LIVE,
-
-    ...(searchParams?.q
-      ? {
-          OR: [
-            {
-              title: {
-                contains: searchParams.q as string,
-                mode: 'insensitive',
-              },
-            },
-            {
-              description: {
-                contains: searchParams.q as string,
-                mode: 'insensitive',
-              },
-            },
-          ],
-        }
-      : {}),
-
-    ...mapParamsToFields,
-  };
-};
 
 const getInventory = async (searchParams: AwaitedPageProps['searchParams']) => {
   const validPage = PageSchema.parse(searchParams?.page);
@@ -140,7 +34,7 @@ const getInventory = async (searchParams: AwaitedPageProps['searchParams']) => {
 };
 export default async function InventoryPage(props: PageProps) {
   const searchParams = await props.searchParams;
-  const classifieds = await getInventory(searchParams);
+  const classifieds = getInventory(searchParams);
   const count = await prisma.classified.count({
     where: buildClassifiedFilterQuery(searchParams),
   });
@@ -190,10 +84,12 @@ export default async function InventoryPage(props: PageProps) {
             }}
           />
         </div>
-        <ClassifiedsList
-          classifieds={classifieds}
-          favourites={favourites ? favourites.ids : []}
-        />
+        <Suspense fallback={<InventorySkeleton />}>
+          <ClassifiedsList
+            classifieds={classifieds}
+            favourites={favourites ? favourites.ids : []}
+          />
+        </Suspense>
 
         <CustomPagination
           baseURL={routes.inventory}

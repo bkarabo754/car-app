@@ -107,7 +107,7 @@
     --popover: 210 10% 86%;
     --primary: 210 70% 50%;
     --border: 210 10% 59%;
-    --accent: 0 70% 50%;
+    /* --accent: 0 70% 50%; */
     --muted: 210 10% 86%;
     --input: 210 10% 63%;
     --card: 210 20% 96%;
@@ -151,7 +151,7 @@
 
 body {
   color: var(--background);
-  background: var(--foreground);
+  /* background: var(--foreground); */
   font-family: Arial, Helvetica, sans-serif;
 }
 
