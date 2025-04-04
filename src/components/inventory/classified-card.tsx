@@ -1,16 +1,7 @@
 'use client';
 
 import { routes } from '@/config/routes';
-import {
-  ClassifiedWithImages,
-  Favourites,
-  MultiStepFormEnum,
-} from '@/config/types';
-import { Prisma } from '@prisma/client';
-import Image from 'next/image';
-import Link from 'next/link';
-import { HTMLParser } from '../shared/html-parser';
-import { Cog, Fuel, GaugeCircle, Paintbrush2 } from 'lucide-react';
+import { type ClassifiedWithImages, MultiStepFormEnum } from '@/config/types';
 import {
   formatColour,
   formatFuelType,
@@ -19,11 +10,15 @@ import {
   formatPrice,
   formatTransmission,
 } from '@/lib/utils';
-import { Button } from '../ui/button';
-import { FavouriteButton } from './favourite-button';
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Cog, Fuel, GaugeCircle, Paintbrush2 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { HTMLParser } from '../shared/html-parser';
+import { Button } from '../ui/button';
+import { ImgixImage } from '../ui/imgix-image';
+import { FavouriteButton } from './favourite-button';
 
 interface ClassifiedCardProps {
   classified: ClassifiedWithImages;
@@ -56,6 +51,7 @@ const getKeyClassifiedInfo = (classified: ClassifiedWithImages) => {
     },
   ];
 };
+
 export const ClassifiedCard = (props: ClassifiedCardProps) => {
   const { classified, favourites } = props;
 
@@ -63,7 +59,6 @@ export const ClassifiedCard = (props: ClassifiedCardProps) => {
   const [isFavourite, setIsFavourite] = useState(
     favourites.includes(classified.id)
   );
-
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -81,12 +76,12 @@ export const ClassifiedCard = (props: ClassifiedCardProps) => {
         >
           <div className="aspect-3/2 relative">
             <Link href={routes.singleClassified(classified.slug)}>
-              <Image
+              <ImgixImage
                 placeholder="blur"
                 blurDataURL={classified.images[0]?.blurhash}
                 src={classified.images[0]?.src}
                 alt={classified.images[0]?.alt}
-                className="object-cover"
+                className="object-cover rounded-t-md"
                 fill={true}
                 quality={25}
               />
@@ -106,21 +101,22 @@ export const ClassifiedCard = (props: ClassifiedCardProps) => {
             </div>
           </div>
           <div className="p-4 flex flex-col space-y-3">
-            <Link
-              href={routes.singleClassified(classified.slug)}
-              className="text-sm md:text-base lg:text-lg font-semibold line-clamp-1 transition-colors hover:text-primary"
-            >
-              {classified.title}
-            </Link>
             <div>
+              <Link
+                href={routes.singleClassified(classified.slug)}
+                className="text-sm md:text-base lg:text-lg font-semibold line-clamp-1 transition-colors hover:text-primary"
+              >
+                {classified.title}
+              </Link>
               {classified?.description && (
                 <div className="text-xs md:text-sm xl:text-base text-gray-500 line-clamp-2">
                   <HTMLParser html={classified.description} />
                   &nbsp;{' '}
+                  {/* Used for equal spacing across each card in the grid */}
                 </div>
               )}
 
-              <ul className="text-xs mt-5 md:text-sm text-gray-600 xl:flex grid grid-cols-1 grid-rows-4 md:grid-cols-2 md:grid-rows-4 items-center justify-between w-full">
+              <ul className="text-xs md:text-sm text-gray-600 xl:flex grid grid-cols-1 grid-rows-4 md:grid-cols-2 md:grid-rows-4 items-center justify-between w-full">
                 {getKeyClassifiedInfo(classified)
                   .filter((v) => v.value)
                   .map(({ id, icon, value }) => (
