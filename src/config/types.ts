@@ -5,6 +5,11 @@ type Params = {
   [x: string]: string | string[];
 };
 
+export type PrevState = {
+  success: boolean;
+  message: string;
+};
+
 export type PageProps = {
   params?: Promise<Params>;
   searchParams?: Promise<{ [x: string]: string | string[] | undefined }>;
