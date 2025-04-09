@@ -77,13 +77,11 @@ export const SubmitDetails = (props: MultiStepFormComponentProps) => {
         ...data,
       });
 
-      // Use Toaster to show success or error
       if (!success) {
         toast('Error', {
           description: message,
           duration: 2500,
-          // Apply Tailwind CSS classes for error toasts (red background)
-          className: 'bg-red-500 text-white p-4 rounded-lg shadow-md', // Tailwind red color for error
+          className: 'bg-red-500 text-white p-4 rounded-lg shadow-md',
         });
         return;
       }
@@ -91,8 +89,7 @@ export const SubmitDetails = (props: MultiStepFormComponentProps) => {
       toast('Success', {
         description: message,
         duration: 1000,
-        // Apply Tailwind CSS classes for success toasts (green background)
-        className: 'bg-green-500 text-white p-4 rounded-lg shadow-md', // Tailwind green color for success
+        className: 'bg-green-500 text-white p-4 rounded-lg shadow-md',
       });
 
       setTimeout(() => {
